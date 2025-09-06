@@ -1,0 +1,15 @@
+[package]
+name = "Aptick"
+version = "1.0.0"
+authors = ["virtualconnekt"]
+
+[addresses]
+aptick_addr = "72780903f4ca64d29bf9fcd1be4b863190d76d25cc5efd176ee4b119732419c1"
+[dev-addresses]
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-framework.git"
+rev = "mainnet"
+subdir = "aptos-framework"
+
+[dev-dependencies]
