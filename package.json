@@ -1,7 +1,63 @@
 {
-  "dependencies": {
-    "@aptos-labs/ts-sdk": "^3.1.3",
-    "@aptos-labs/wallet-adapter-react": "^7.0.4",
-    "lucide-react": "^0.542.0"
+  "name": "aptick",
+  "version": "1.0.0",
+  "description": "Decentralized billing system built on Aptos blockchain",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm start",
+    "test": "cd smartcontract && aptos move test",
+    "lint": "cd frontend && npm run lint",
+    "compile": "cd smartcontract && aptos move compile",
+    "publish": "cd smartcontract && aptos move publish --named-addresses aptick_addr=default",
+    "clean": "cd frontend && rm -rf .next && cd ../smartcontract && rm -rf build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/username/aptick.git"
+  },
+  "keywords": [
+    "aptos",
+    "blockchain",
+    "billing",
+    "payments",
+    "web3",
+    "defi",
+    "move",
+    "smart-contracts"
+  ],
+  "author": "Aptick Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/username/aptick/issues"
+  },
+  "homepage": "https://github.com/username/aptick#readme",
+  "workspaces": [
+    "frontend",
+    "sdk"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.{json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
