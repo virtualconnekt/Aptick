@@ -176,4 +176,5 @@ module aptick_addr::billing {
     inline fun module_address(): address {
         @aptick_addr
     }
+    
 }
