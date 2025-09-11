@@ -1,0 +1,31 @@
+# Source files
+src/
+test/
+examples/
+
+# Development files
+tsconfig.json
+.tsbuildinfo
+
+# Documentation (keep README.md)
+*.md
+!README.md
+
+# Development dependencies
+node_modules/
+.npm
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore

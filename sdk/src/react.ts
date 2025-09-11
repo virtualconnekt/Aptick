@@ -1,3 +1,4 @@
+import React, { createContext, useContext, ReactNode } from 'react';
 import { AptickClient } from './client';
 import { AptickUtils } from './utils';
 import { 
@@ -86,10 +87,8 @@ export function useAptickQuery(client: AptickClient) {
 }
 
 /**
- * Higher-order component for providing Aptick client to React components
+ * React Context and Provider for Aptick SDK
  */
-import { createContext, useContext, ReactNode } from 'react';
-
 const AptickContext = createContext<AptickClient | null>(null);
 
 interface AptickProviderProps {
@@ -98,10 +97,10 @@ interface AptickProviderProps {
 }
 
 export function AptickProvider({ client, children }: AptickProviderProps) {
-  return (
-    <AptickContext.Provider value={client}>
-      {children}
-    </AptickContext.Provider>
+  return React.createElement(
+    AptickContext.Provider,
+    { value: client },
+    children
   );
 }
 

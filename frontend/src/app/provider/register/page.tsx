@@ -9,11 +9,12 @@ import Link from 'next/link';
 
 export default function RegisterProviderPage() {
   const wallet = useWallet();
-  const { account, signAndSubmitTransaction } = wallet;
+  const { account, signAndSubmitTransaction, connected } = wallet;
   const [pricePerUnit, setPricePerUnit] = useState('');
   const [unit, setUnit] = useState('');
   const [priceInApt, setPriceInApt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingBillingId, setLoadingBillingId] = useState(false);
   const [result, setResult] = useState<{
     success: boolean;
     message: string;
@@ -24,8 +25,10 @@ export default function RegisterProviderPage() {
   // Debug: Log wallet methods
   console.log('🔍 Wallet object inspection:');
   console.log('Wallet keys:', Object.keys(wallet));
+  console.log('connected state:', connected);
   console.log('signAndSubmitTransaction available:', !!signAndSubmitTransaction);
   console.log('signAndSubmitTransaction type:', typeof signAndSubmitTransaction);
+  console.log('account available:', !!account);
   
   // Check for alternative transaction methods
   const altMethods = ['submitTransaction', 'signTransaction', 'sendTransaction'];
@@ -69,16 +72,27 @@ export default function RegisterProviderPage() {
     e.preventDefault();
     
     console.log('=== Form Submission Debug ===');
+    console.log('Connected state:', connected);
     console.log('Account object:', account);
     console.log('Account address:', account?.address?.toString());
     console.log('signAndSubmitTransaction function:', signAndSubmitTransaction);
     console.log('signAndSubmitTransaction type:', typeof signAndSubmitTransaction);
     
-    if (!account) {
-      console.log('❌ No account connected');
+    // Enhanced wallet connection validation
+    if (!connected) {
+      console.log('❌ Wallet not connected (connected=false)');
       setResult({
         success: false,
-        message: 'Please connect your wallet first'
+        message: 'Wallet is not connected. Please connect your wallet and try again.'
+      });
+      return;
+    }
+    
+    if (!account) {
+      console.log('❌ No account available');
+      setResult({
+        success: false,
+        message: 'No account found. Please ensure your wallet is properly connected.'
       });
       return;
     }
@@ -152,18 +166,47 @@ export default function RegisterProviderPage() {
         signAndSubmitTransaction,
         account.address.toString(),
         parseInt(pricePerUnit),
-        unit
+        unit,
+        connected // Pass the connected state for validation
       );
 
       console.log('📊 Registration response:', response);
 
       if (response.success) {
         console.log('✅ Registration successful!');
-        setResult({
-          success: true,
-          message: 'Provider registered successfully!',
-          transactionHash: response.hash
-        });
+        
+        // Try to get the billing ID from the transaction
+        try {
+          console.log('🔍 Fetching billing ID from transaction...');
+          const assignedBillingId = await AptickService.getBillingIdFromTransaction(response.hash);
+          
+          if (assignedBillingId !== null && assignedBillingId > 0) {
+            setResult({
+              success: true,
+              message: 'Provider registered successfully!',
+              billingId: assignedBillingId,
+              transactionHash: response.hash
+            });
+          } else {
+            console.warn('⚠️ Could not retrieve billing ID, but registration was successful');
+            setResult({
+              success: true,
+              message: 'Provider registered successfully! Billing ID will be available shortly.',
+              transactionHash: response.hash
+            });
+          }
+        } catch (billingIdError) {
+          console.error('🚨 Error fetching billing ID:', billingIdError);
+          console.error('Billing ID error details:', {
+            errorMessage: billingIdError instanceof Error ? billingIdError.message : String(billingIdError),
+            errorStack: billingIdError instanceof Error ? billingIdError.stack : undefined
+          });
+          setResult({
+            success: true,
+            message: 'Provider registered successfully! Billing ID will be available shortly.',
+            transactionHash: response.hash
+          });
+        }
         
         // Reset form
         setPricePerUnit('');
@@ -189,6 +232,32 @@ export default function RegisterProviderPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGetBillingId = async () => {
+    if (!result?.success || !result?.transactionHash) return;
+    
+    setLoadingBillingId(true);
+    try {
+      console.log('🔄 Manually fetching billing ID...');
+      let billingId = await AptickService.getBillingIdFromTransaction(result.transactionHash);
+      
+      if (!billingId) {
+        console.log('🔄 Trying alternative method...');
+        billingId = await AptickService.getLatestBillingId();
+      }
+      
+      if (billingId && billingId > 0) {
+        setResult(prev => prev ? { ...prev, billingId } : null);
+      } else {
+        alert('Could not retrieve billing ID. Please check the transaction on Aptos Explorer.');
+      }
+    } catch (error) {
+      console.error('🚨 Error manually fetching billing ID:', error);
+      alert('Error fetching billing ID. Please try again later.');
+    } finally {
+      setLoadingBillingId(false);
     }
   };
 
@@ -232,10 +301,18 @@ export default function RegisterProviderPage() {
           </div>
 
           {/* Wallet Connection Status */}
-          {!account && (
+          {!connected && (
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-yellow-800 text-center">
                 Please connect your wallet to register as a service provider
+              </p>
+            </div>
+          )}
+          
+          {connected && !account && (
+            <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-orange-800 text-center">
+                Wallet connected but no account found. Please refresh and try again.
               </p>
             </div>
           )}
@@ -318,7 +395,7 @@ export default function RegisterProviderPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || !account || !signAndSubmitTransaction}
+              disabled={loading || !connected || !account || !signAndSubmitTransaction}
               className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-lg flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -349,6 +426,28 @@ export default function RegisterProviderPage() {
                 
                 {result.success && result.transactionHash && (
                   <div className="space-y-2">
+                    {result.billingId && (
+                      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-lg font-bold text-blue-900 mb-1">
+                              🎉 Your Billing ID: <span className="font-mono text-xl">{result.billingId}</span>
+                            </p>
+                            <p className="text-sm text-blue-700">
+                              Use this ID to integrate billing into your dApp. Save it for your records!
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => navigator.clipboard.writeText(result.billingId!.toString())}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
+                            title="Copy Billing ID"
+                          >
+                            Copy ID
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
                     <p className="text-sm">
                       <span className="font-medium">Transaction Hash:</span>
                     </p>
@@ -366,10 +465,24 @@ export default function RegisterProviderPage() {
                         Aptos Explorer
                       </a>
                     </p>
-                    <p className="text-sm mt-4 p-3 bg-blue-50 rounded border-blue-200 border">
-                      <strong>Next Steps:</strong> Your billing ID will be available once the transaction is confirmed. 
-                      You can use this ID to integrate billing into your dApp.
-                    </p>
+                    
+                    {!result.billingId && (
+                      <div className="text-sm mt-4 p-3 bg-yellow-50 rounded border-yellow-200 border">
+                        <p className="mb-2">
+                          <strong>Billing ID not retrieved automatically.</strong> You can try to get it manually:
+                        </p>
+                        <button
+                          onClick={handleGetBillingId}
+                          disabled={loadingBillingId}
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+                        >
+                          {loadingBillingId ? 'Getting ID...' : 'Get My Billing ID'}
+                        </button>
+                        <p className="text-xs mt-2 text-gray-600">
+                          Or check your transaction on Aptos Explorer to see the billing ID in the events.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

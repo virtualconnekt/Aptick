@@ -1,6 +1,6 @@
 // Example: How the current frontend would use the new SDK
 
-import { createAptickClient, AptickUtils } from '@aptick/sdk';
+import { createAptickClient, AptickUtils } from 'aptick-sdk';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useState, useEffect } from 'react';
 

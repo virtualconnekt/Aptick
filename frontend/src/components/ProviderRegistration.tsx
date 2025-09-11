@@ -12,6 +12,7 @@ export function ProviderRegistration() {
   const [unit, setUnit] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [billingId, setBillingId] = useState<number | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +34,23 @@ export function ProviderRegistration() {
 
       if (result.success) {
         setMessage(`Successfully registered as provider! Transaction: ${result.hash}`);
+        
+        // Try to get the billing ID from the transaction
+        try {
+          console.log('🔍 Fetching billing ID from transaction...');
+          const assignedBillingId = await AptickService.getBillingIdFromTransaction(result.hash);
+          if (assignedBillingId !== null && assignedBillingId > 0) {
+            setBillingId(assignedBillingId);
+            setMessage(`Successfully registered as provider! Your Billing ID: ${assignedBillingId}`);
+          } else {
+            console.warn('⚠️ Could not retrieve billing ID, but registration was successful');
+            setMessage(`Successfully registered as provider! Transaction: ${result.hash}. Billing ID will be available shortly.`);
+          }
+        } catch (billingIdError) {
+          console.error('🚨 Error fetching billing ID:', billingIdError);
+          setMessage(`Successfully registered as provider! Transaction: ${result.hash}. Billing ID will be available shortly.`);
+        }
+        
         setPricePerUnit('');
         setUnit('');
       } else {
@@ -117,6 +135,27 @@ export function ProviderRegistration() {
             : 'bg-red-100 text-red-700'
         }`}>
           {message}
+          {billingId !== null && (
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-blue-900 mb-1">
+                    🎉 Your Billing ID: <span className="font-mono text-lg">{billingId}</span>
+                  </p>
+                  <p className="text-xs text-blue-700">
+                    Use this ID to integrate billing into your dApp. Save it for your records!
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigator.clipboard.writeText(billingId.toString())}
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                  title="Copy Billing ID"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

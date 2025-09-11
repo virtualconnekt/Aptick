@@ -5,6 +5,7 @@ import { ProviderRegistration } from '@/components/ProviderRegistration';
 import { DepositForm } from '@/components/DepositForm';
 import { BalanceViewer } from '@/components/BalanceViewer';
 import { UsageRecorder } from '@/components/UsageRecorder';
+import LocalSDKTest from '@/components/LocalSDKTest';
 import { Activity, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -59,6 +60,11 @@ export default function Home() {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* SDK Test Component */}
+          <div className="lg:col-span-2">
+            <LocalSDKTest />
+          </div>
+          
           {/* Provider Registration */}
           <ProviderRegistration />
           

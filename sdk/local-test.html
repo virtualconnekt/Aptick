@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aptick SDK Local Test</title>
+</head>
+
+<body>
+    <h1>Aptick SDK Local Test</h1>
+    <div id="app"></div>
+
+    <script type="module">
+        // Import your built SDK import { AptickClient } from './dist/index.js'; // Test your SDK const client = new AptickClient({ network: 'local' // or 'devnet' }); console.log('SDK initialized:', client); // Add your tests here document.getElementById('app').innerHTML
+        = `
+        <p>SDK loaded successfully!</p>
+        <p>Check console for details</p>
+        `;
+    </script>
+</body>
+
+</html>

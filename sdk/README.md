@@ -1,6 +1,7 @@
-# @aptick/sdk
+# aptick-sdk
 
-The official JavaScript/TypeScript SDK for Aptick - a decentralized billing system built on the Aptos blockchain.
+## NOTE:This is For Testing purpose Only
+This Is The official JavaScript/TypeScript SDK for Aptick - a decentralized billing system built on the Aptos blockchain.
 
 ## Features
 
@@ -14,19 +15,19 @@ The official JavaScript/TypeScript SDK for Aptick - a decentralized billing syst
 ## Installation
 
 ```bash
-npm install @aptick/sdk
+npm install aptick-sdk
 # or
-yarn add @aptick/sdk
+yarn add aptick-sdk
 # or
-pnpm add @aptick/sdk
+pnpm add aptick-sdk
 ```
 
 ## Quick Start
 
-### Basic Setup
+### For Users
 
 ```typescript
-import { createAptickClient, AptickConfig } from '@aptick/sdk';
+import { createAptickClient, AptickConfig } from 'aptick-sdk';
 
 const config: AptickConfig = {
   network: 'devnet', // or 'mainnet', 'testnet', 'local'
@@ -37,10 +38,19 @@ const client = createAptickClient(config);
 await client.initialize();
 ```
 
+### For Providers (After Registration)
+
+Once you've registered on the Aptick platform and received your billing ID:
+
+1. **Install the SDK**: `npm install aptick-sdk`
+2. **Follow the [Integration Guide](./INTEGRATION_GUIDE.md)**
+3. **Use the [Provider Checklist](./PROVIDER_CHECKLIST.md)**
+4. **Check [Examples](./examples/)** for your use case
+
 ### React Integration
 
 ```tsx
-import { AptickProvider, useAptick, setupAptick } from '@aptick/sdk';
+import { AptickProvider, useAptick, setupAptick } from 'aptick-sdk';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 
 // Setup the client
@@ -112,7 +122,7 @@ const balance = await client.getAptBalance(address);
 Utility functions for common operations.
 
 ```typescript
-import { AptickUtils } from '@aptick/sdk';
+import { AptickUtils } from 'aptick-sdk';
 
 // Convert between APT and octas
 const octas = AptickUtils.aptToOctas(1.5); // 150,000,000 octas
@@ -133,7 +143,7 @@ const cost = AptickUtils.calculateCost(10n, 1000n); // 10 units × 1000 octas = 
 #### `useProviderRegistration`
 
 ```typescript
-import { useProviderRegistration } from '@aptick/sdk';
+import { useProviderRegistration } from 'aptick-sdk';
 
 const { registerProvider } = useProviderRegistration(client);
 
@@ -143,7 +153,7 @@ await registerProvider(signAndSubmitTransaction, 0.001, 'GB');
 #### `useUserOperations`
 
 ```typescript
-import { useUserOperations } from '@aptick/sdk';
+import { useUserOperations } from 'aptick-sdk';
 
 const { deposit, terminateService } = useUserOperations(client);
 
@@ -154,7 +164,7 @@ await terminateService(signAndSubmitTransaction, billingId);
 #### `useProviderOperations`
 
 ```typescript
-import { useProviderOperations } from '@aptick/sdk';
+import { useProviderOperations } from 'aptick-sdk';
 
 const { recordUsage } = useProviderOperations(client);
 
@@ -164,7 +174,7 @@ await recordUsage(signAndSubmitTransaction, billingId, userAddress, 10);
 #### `useAptickQuery`
 
 ```typescript
-import { useAptickQuery } from '@aptick/sdk';
+import { useAptickQuery } from 'aptick-sdk';
 
 const { getProvider, getUserEscrow, getAptBalance } = useAptickQuery(client);
 
@@ -178,7 +188,7 @@ const balance = await getAptBalance(address);
 ### Complete Provider Registration Flow
 
 ```typescript
-import { createAptickClient, AptickUtils } from '@aptick/sdk';
+import { createAptickClient, AptickUtils } from 'aptick-sdk';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 
 async function registerAsProvider() {

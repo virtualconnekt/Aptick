@@ -75,7 +75,8 @@ export class AptickService {
     signAndSubmitTransaction: any,
     senderAddress: string,
     pricePerUnit: number, 
-    unit: string
+    unit: string,
+    walletConnected?: boolean
   ): Promise<TransactionResult> {
     try {
       // Validate inputs with detailed checks
@@ -88,6 +89,7 @@ export class AptickService {
       console.log('senderAddress:', senderAddress);
       console.log('pricePerUnit:', pricePerUnit, typeof pricePerUnit);
       console.log('unit:', unit, typeof unit);
+      console.log('walletConnected:', walletConnected);
       
       if (!CONTRACT_ADDRESS) {
         throw new Error('CONTRACT_ADDRESS is not defined');
@@ -103,6 +105,15 @@ export class AptickService {
       
       if (typeof signAndSubmitTransaction !== 'function') {
         throw new Error(`signAndSubmitTransaction is not a function, got: ${typeof signAndSubmitTransaction}`);
+      }
+      
+      if (!senderAddress) {
+        throw new Error('Sender address is not provided');
+      }
+      
+      // Additional wallet connection validation
+      if (walletConnected === false) {
+        throw new Error('Wallet is not connected. Please connect your wallet and try again.');
       }
 
       // Build the function path
@@ -321,6 +332,172 @@ export class AptickService {
     } catch (error) {
       console.error('Get user usage units error:', error);
       return 0;
+    }
+  }
+
+  // Diagnostic function to check contract state
+  static async diagnoseContractState(): Promise<void> {
+    try {
+      console.log('=== Contract State Diagnosis ===');
+      console.log('CONTRACT_ADDRESS:', CONTRACT_ADDRESS);
+      console.log('MODULE_NAME:', MODULE_NAME);
+      
+      // Check if account exists
+      try {
+        const account = await aptos.getAccountInfo({ accountAddress: CONTRACT_ADDRESS });
+        console.log('✅ Contract account exists:', account.sequence_number);
+      } catch (accountError) {
+        console.error('❌ Contract account does not exist:', accountError);
+        return;
+      }
+      
+      // Check if Aptick resource exists
+      try {
+        const aptickResource = await aptos.getAccountResource({
+          accountAddress: CONTRACT_ADDRESS,
+          resourceType: `${CONTRACT_ADDRESS}::${MODULE_NAME}::Aptick`
+        });
+        console.log('✅ Aptick resource found:', aptickResource);
+        
+        // The resource data is directly in the resource object
+        const data = aptickResource as any;
+        console.log('📊 Resource data keys:', Object.keys(data));
+        console.log('🔢 next_billing_id:', data.next_billing_id);
+        console.log('📋 providers table handle:', data.providers?.handle);
+        console.log('💰 balances table handle:', data.balances?.handle);
+      } catch (resourceError) {
+        console.error('❌ Aptick resource not found:', resourceError);
+      }
+    } catch (error) {
+      console.error('💥 Diagnosis failed:', error);
+    }
+  }
+
+  // Get billing ID from transaction after provider registration
+  static async getBillingIdFromTransaction(transactionHash: string): Promise<number | null> {
+    try {
+      console.log('=== Getting Billing ID from Transaction ===');
+      console.log('Transaction hash:', transactionHash);
+      
+      // Wait a bit for the transaction to be processed
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // First check if contract is deployed and initialized
+      console.log('🔍 Checking contract deployment before querying billing ID...');
+      const isDeployed = await this.checkContractDeployment();
+      if (!isDeployed) {
+        console.error('❌ Contract not deployed or initialized');
+        await this.diagnoseContractState(); // Run diagnostic
+        return null;
+      }
+      
+      // Query the current next_billing_id from the contract
+      // Since the contract increments next_billing_id after registration,
+      // the billing ID assigned to the provider is (current_next_billing_id - 1)
+      console.log('📡 Querying contract resource...');
+      const aptickResource = await aptos.getAccountResource({
+        accountAddress: CONTRACT_ADDRESS,
+        resourceType: `${CONTRACT_ADDRESS}::${MODULE_NAME}::Aptick`
+      });
+      
+      console.log('📊 Contract resource:', aptickResource);
+      
+      // Check if resource exists
+      if (!aptickResource) {
+        console.error('❌ Contract resource is undefined');
+        await this.diagnoseContractState(); // Run diagnostic
+        return null;
+      }
+      
+      // The resource data is directly in the resource object, not in a 'data' field
+      const resourceData = aptickResource as any;
+      console.log('📋 Resource data:', resourceData);
+      
+      // Check if next_billing_id exists in the resource
+      if (!resourceData.next_billing_id) {
+        console.error('❌ next_billing_id not found in resource data');
+        console.log('📋 Available keys:', Object.keys(resourceData));
+        return null;
+      }
+      
+      const nextBillingId = resourceData.next_billing_id;
+      const assignedBillingId = parseInt(nextBillingId.toString()) - 1;
+      
+      console.log('Current next_billing_id:', nextBillingId);
+      console.log('Assigned billing_id:', assignedBillingId);
+      
+      // Validate the assigned billing ID
+      if (assignedBillingId < 1) {
+        console.error('❌ Invalid billing ID calculated:', assignedBillingId);
+        return null;
+      }
+      
+      return assignedBillingId;
+    } catch (error) {
+      console.error('💥 Error getting billing ID from contract state:', error);
+      
+      // Fallback: try to extract from transaction events
+      try {
+        console.log('🔄 Trying fallback: parsing transaction events...');
+        const txn = await aptos.getTransactionByHash({ transactionHash });
+        console.log('📝 Transaction details:', txn);
+        
+        if ('events' in txn && txn.events) {
+          console.log('🎯 Found events:', txn.events.length);
+          // Look for any event that might contain billing ID
+          for (const event of txn.events) {
+            console.log('🔍 Checking event:', event);
+            if ('data' in event) {
+              const eventData = event.data as any;
+              if (eventData && (eventData.billing_id || eventData.id)) {
+                const foundId = parseInt(eventData.billing_id || eventData.id);
+                console.log('✅ Found billing ID in events:', foundId);
+                return foundId;
+              }
+            }
+          }
+        }
+      } catch (eventError) {
+        console.warn('⚠️ Error parsing transaction events:', eventError);
+      }
+      
+      // Final fallback: return null
+      console.warn('❌ Could not determine billing ID from any method');
+      return null;
+    }
+  }
+
+  // Alternative method: Get the latest billing ID by checking the provider table
+  static async getLatestBillingId(): Promise<number | null> {
+    try {
+      console.log('=== Getting Latest Billing ID (Alternative Method) ===');
+      
+      const aptickResource = await aptos.getAccountResource({
+        accountAddress: CONTRACT_ADDRESS,
+        resourceType: `${CONTRACT_ADDRESS}::${MODULE_NAME}::Aptick`
+      });
+      
+      if (!aptickResource) {
+        console.error('❌ No Aptick resource found');
+        return null;
+      }
+      
+      // The resource data is directly in the resource object
+      const data = aptickResource as any;
+      if (!data.next_billing_id) {
+        console.error('❌ next_billing_id not found');
+        console.log('📋 Available keys in resource:', Object.keys(data));
+        return null;
+      }
+      
+      const nextId = parseInt(data.next_billing_id.toString());
+      const latestId = nextId - 1;
+      
+      console.log('✅ Latest billing ID (next_billing_id - 1):', latestId);
+      return latestId > 0 ? latestId : null;
+    } catch (error) {
+      console.error('💥 Error getting latest billing ID:', error);
+      return null;
     }
   }
 
