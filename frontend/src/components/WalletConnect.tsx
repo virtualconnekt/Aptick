@@ -61,7 +61,7 @@ export function WalletConnect() {
   return (
     <button
       onClick={handleConnect}
-      className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+      className="flex items-center gap-3 border-2 border-[#bfcfc8] hover:border-[#95dcc3] text-[#bfcfc8] hover:text-[#95dcc3] px-8 py-4 font-semibold text-lg transition-all duration-200"
     >
       <Wallet size={20} />
       Connect Wallet

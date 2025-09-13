@@ -262,18 +262,20 @@ export default function RegisterProviderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-[#051419]">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-[#051419] border-b border-[#bfcfc8]/20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link 
                 href="/"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-3 text-[#bfcfc8] hover:text-[#95dcc3] transition-colors group"
               >
-                <ArrowLeft size={20} />
-                Back to Home
+                <div className="p-2 bg-[#bfcfc8]/10 group-hover:bg-[#007BFF]/20 transition-colors">
+                  <ArrowLeft size={20} />
+                </div>
+                <span className="font-medium">Back to Home</span>
               </Link>
             </div>
             <WalletConnect />
@@ -282,19 +284,19 @@ export default function RegisterProviderPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-xl shadow-lg p-8">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="bg-[#FFFFFF]/5 backdrop-blur-sm border border-[#bfcfc8]/20 rounded-2xl p-10">
           {/* Title and Description */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Plus className="text-blue-600" size={24} />
+          <div className="text-center mb-10">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="bg-gradient-to-r from-[#007BFF] to-[#2CEAA3] p-4 rounded-2xl shadow-lg">
+                <Plus className="text-[#FFFFFF]" size={32} />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Register as a Service Provider
+              <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-[#FFFFFF] via-[#30aff8] to-[#bba600] bg-clip-text leading-tight">
+                Register as a<br />Service Provider
               </h1>
             </div>
-            <p className="text-lg text-gray-600 max-w-xl mx-auto">
+            <p className="text-lg text-transparent bg-gradient-to-r from-[#FFFFFF] via-[#30aff8] to-[#bba600] bg-clip-text max-w-xl mx-auto leading-relaxed">
               Set your price per unit and unit type (e.g., GB, API_CALL). 
               A billing ID will be generated on-chain for you to use in your dApp.
             </p>
@@ -302,32 +304,32 @@ export default function RegisterProviderPage() {
 
           {/* Wallet Connection Status */}
           {!connected && (
-            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-yellow-800 text-center">
+            <div className="mb-8 p-6 bg-gradient-to-r from-[#007BFF]/5 to-[#2CEAA3]/5 border border-[#007BFF]/20 rounded-xl">
+              <p className="text-transparent bg-gradient-to-r from-[#FFFFFF] via-[#30aff8] to-[#bba600] bg-clip-text text-center font-medium">
                 Please connect your wallet to register as a service provider
               </p>
             </div>
           )}
           
           {connected && !account && (
-            <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <p className="text-orange-800 text-center">
+            <div className="mb-8 p-6 bg-gradient-to-r from-[#2CEAA3]/10 to-[#007BFF]/10 border border-[#2CEAA3]/30 rounded-xl">
+              <p className="text-transparent bg-gradient-to-r from-[#FFFFFF] via-[#30aff8] to-[#bba600] bg-clip-text text-center font-medium">
                 Wallet connected but no account found. Please refresh and try again.
               </p>
             </div>
           )}
 
           {/* Registration Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Price Per Unit */}
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="space-y-6">
+              <label className="block text-lg font-semibold text-[#bba500]">
                 Price per Unit
               </label>
               
               {/* APT Input */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">
+                <label className="block text-sm font-medium text-transparent bg-gradient-to-r from-[#FFFFFF] via-[#30aff8] to-[#bba600] bg-clip-text mb-3">
                   Price in APT
                 </label>
                 <div className="relative">
@@ -336,18 +338,18 @@ export default function RegisterProviderPage() {
                     step="0.00000001"
                     value={priceInApt}
                     onChange={handleAptChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-4 border-2 border-[#bfcfc8]/30 bg-[#FFFFFF]/10 backdrop-blur-sm focus:ring-2 focus:ring-[#007BFF] focus:border-[#007BFF] transition-colors text-[#FFFFFF] text-lg"
                     placeholder="0.00000100"
                   />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-gray-500 text-sm font-medium">APT</span>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                    <span className="text-[#bfcfc8] text-lg font-semibold">APT</span>
                   </div>
                 </div>
               </div>
 
               {/* Octas Input */}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">
+                <label className="block text-sm font-medium text-transparent bg-gradient-to-r from-[#FFFFFF] via-[#30aff8] to-[#bba600] bg-clip-text mb-3">
                   Price in Octas
                 </label>
                 <div className="relative">
@@ -355,20 +357,22 @@ export default function RegisterProviderPage() {
                     type="number"
                     value={pricePerUnit}
                     onChange={handleOctasChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-4 border-2 border-[#bfcfc8]/30 bg-[#FFFFFF]/10 backdrop-blur-sm focus:ring-2 focus:ring-[#007BFF] focus:border-[#007BFF] transition-colors text-[#FFFFFF] text-lg"
                     placeholder="100"
                     required
                   />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-gray-500 text-sm font-medium">Octas</span>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                    <span className="text-[#bfcfc8] text-lg font-semibold">Octas</span>
                   </div>
                 </div>
               </div>
 
               {/* Conversion Helper */}
-              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
-                <Calculator size={16} className="text-blue-600" />
-                <span className="text-sm text-blue-700">
+              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-[#007BFF]/5 to-[#2CEAA3]/5 rounded-xl border border-[#007BFF]/20">
+                <div className="p-2 bg-[#007BFF]/10 rounded-lg">
+                  <Calculator size={20} className="text-[#007BFF]" />
+                </div>
+                <span className="text-sm text-transparent bg-gradient-to-r from-[#FFFFFF] via-[#30aff8] to-[#bba600] bg-clip-text font-medium">
                   1 APT = 100,000,000 Octas
                 </span>
               </div>
@@ -376,18 +380,18 @@ export default function RegisterProviderPage() {
 
             {/* Unit Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-lg font-semibold text-[#bba500] mb-3">
                 Unit Type
               </label>
               <input
                 type="text"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-4 border-2 border-[#bfcfc8]/30 bg-[#FFFFFF]/10 backdrop-blur-sm focus:ring-2 focus:ring-[#007BFF] focus:border-[#007BFF] transition-colors text-[#FFFFFF] text-lg"
                 placeholder="e.g., GB, API_CALL, MB, minutes"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-sm text-transparent bg-gradient-to-r from-[#FFFFFF] via-[#30aff8] to-[#bba600] bg-clip-text mt-2">
                 Examples: GB, API_CALL, MB, minutes, requests, etc.
               </p>
             </div>
@@ -396,16 +400,16 @@ export default function RegisterProviderPage() {
             <button
               type="submit"
               disabled={loading || !connected || !account || !signAndSubmitTransaction}
-              className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-lg flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-[#FFFFFF] to-[#30aff8] hover:from-[#FFFFFF]/90 hover:to-[#30aff8]/90 text-[#524800] py-5 px-8 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold text-xl flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
             >
               {loading ? (
                 <>
-                  <Loader2 className="animate-spin" size={20} />
+                  <Loader2 className="animate-spin" size={24} />
                   Registering Service...
                 </>
               ) : (
                 <>
-                  <Plus size={20} />
+                  <Plus size={24} />
                   Register Service
                 </>
               )}
