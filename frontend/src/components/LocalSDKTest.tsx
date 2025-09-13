@@ -1,7 +1,34 @@
-"use client";
-
 import React, { useState } from 'react';
-import { AptickClient } from 'aptick-sdk';
+// import { AptickClient } from 'aptick-sdk';
+
+// Temporary mock for AptickClient to prevent build errors
+class MockAptickClient {
+  network: string;
+  contractAddress: string;
+  moduleAddress: string;
+  utils: any;
+
+  constructor(config: any) {
+    this.network = config.network;
+    this.contractAddress = config.contractAddress;
+    this.moduleAddress = config.contractAddress + '::billing';
+    this.utils = {
+      aptToOctas: (apt: number) => apt * 100000000,
+      octasToApt: (octas: number) => octas / 100000000,
+      isValidAddress: (addr: string) => addr.startsWith('0x')
+    };
+  }
+
+  // Mock methods
+  getProviderInfo() { return Promise.resolve({}); }
+  registerProvider() { return Promise.resolve({}); }
+  depositToEscrow() { return Promise.resolve({}); }
+  recordUsage() { return Promise.resolve({}); }
+  getEscrowBalance() { return Promise.resolve({}); }
+  withdrawFromEscrow() { return Promise.resolve({}); }
+}
+
+const AptickClient = MockAptickClient;
 
 interface TestResult {
   name: string;
@@ -14,7 +41,7 @@ interface TestResult {
 // Simple test component without provider dependency
 function SDKTester() {
   const [testResult, setTestResult] = useState<string>('');
-  const [client, setClient] = useState<AptickClient | null>(null);
+  const [client, setClient] = useState<MockAptickClient | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [tests, setTests] = useState<TestResult[]>([]);
 
@@ -45,7 +72,8 @@ function SDKTester() {
       return { 
         network: aptickClient.network, 
         contractAddress: aptickClient.contractAddress,
-        moduleAddress: aptickClient.moduleAddress
+        moduleAddress: aptickClient.moduleAddress,
+        mode: 'mock'
       };
     });
     testResults.push(initTest);
@@ -132,7 +160,7 @@ function SDKTester() {
       });
       
       setClient(aptickClient);
-      setTestResult('✅ SDK initialized successfully!');
+      setTestResult('✅ SDK initialized successfully! (Mock mode)');
     } catch (error) {
       setTestResult(`❌ Initialization Error: ${error}`);
     }
@@ -140,7 +168,13 @@ function SDKTester() {
 
   return (
     <div className="p-6 border rounded-lg bg-white shadow-sm">
-      <h2 className="text-xl font-bold mb-4 text-gray-800">🧪 Comprehensive SDK Test Suite</h2>
+      <h2 className="text-xl font-bold mb-4 text-gray-800">🧪 Comprehensive SDK Test Suite (Mock Mode)</h2>
+      
+      <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p className="text-sm text-yellow-800">
+          <strong>Note:</strong> Currently running in mock mode. Install the aptick-sdk package for full functionality.
+        </p>
+      </div>
       
       <div className="space-y-3 mb-4">
         <div className="flex gap-3">
