@@ -1,6 +1,6 @@
 # 🔥 Aptick - Decentralized Billing System
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/username/aptick)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/virtualconnekt/aptick)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Aptos](https://img.shields.io/badge/Aptos-Blockchain-blue)](https://aptos.dev)
 [![Move](https://img.shields.io/badge/Move-Smart%20Contract-purple)](https://move-language.github.io/move/)
@@ -423,15 +423,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Documentation**: [docs.aptick.dev](https://docs.aptick.dev) (coming soon)
 - **Discord**: [Join our community](https://discord.gg/aptick) (coming soon)
-- **Twitter**: [@AptickBilling](https://twitter.com/AptickBilling) (coming soon)
-- **Issues**: [GitHub Issues](https://github.com/username/aptick/issues)
+- **Twitter**: [@AptickBilling](https://twitter.com/Ap_tick)
+- **Issues**: [GitHub Issues](https://github.com/virtualconnekt/aptick/issues)
 
 ## 📊 Stats
 
-![GitHub stars](https://img.shields.io/github/stars/username/aptick?style=social)
-![GitHub forks](https://img.shields.io/github/forks/username/aptick?style=social)
-![GitHub issues](https://img.shields.io/github/issues/username/aptick)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/username/aptick)
+![GitHub stars](https://img.shields.io/github/stars/virtualconnekt/aptick?style=social)
+![GitHub forks](https://img.shields.io/github/forks/virtualconnekt/aptick?style=social)
+![GitHub issues](https://img.shields.io/github/issues/virtualconnekt/aptick)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/virtualconnekt/aptick)
 
 ---
 
@@ -439,6 +439,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for the Aptos ecosystem**
 
-[Website](https://aptick.dev) • [Documentation](https://docs.aptick.dev) • [Discord](https://discord.gg/aptick) • [Twitter](https://twitter.com/AptickBilling)
+[Website](https://aptick.dev) • [Documentation](https://docs.aptick.dev) • [Discord](https://discord.gg/aptick) • [Twitter](https://twitter.com/Ap_tick)
 
 </div>
