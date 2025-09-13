@@ -261,7 +261,7 @@ export class AptickClient {
     try {
       this.ensureInitialized();
 
-      const [priceResult, addressResult] = await Promise.all([
+      const [priceResult, addressResult, unitResult, activeResult, revenueResult] = await Promise.all([
         this.aptos.view({
           payload: {
             function: `${this.config.contractAddress}::${this.config.moduleAccount}::provider_price_per_unit`,
@@ -273,16 +273,19 @@ export class AptickClient {
             function: `${this.config.contractAddress}::${this.config.moduleAccount}::provider_addr`,
             functionArguments: [billingId.toString()]
           }
-        })
+        }),
+        this.getProviderUnit(billingId),
+        this.getProviderActive(billingId), 
+        this.getProviderRevenue(billingId)
       ]);
 
       const provider: Provider = {
         providerId: billingId,
         providerAddress: addressResult[0] as string,
         pricePerUnit: BigInt(priceResult[0] as string),
-        unit: '', // TODO: Add unit to contract view functions
-        active: true, // TODO: Add active status to contract view functions
-        totalRevenue: BigInt(0) // TODO: Add total revenue to contract view functions
+        unit: unitResult.success ? unitResult.data! : 'Unknown',
+        active: activeResult.success ? activeResult.data! : true,
+        totalRevenue: revenueResult.success ? revenueResult.data! : BigInt(0)
       };
 
       return {
@@ -449,24 +452,187 @@ export class AptickClient {
   }
 
   private async getBillingIdFromTransaction(hash: string): Promise<BillingId> {
-    // TODO: Parse transaction events to extract billing ID
-    // For now, return a placeholder
-    return 1;
+    try {
+      // Wait a bit for the transaction to be processed
+      await AptickUtils.sleep(1000);
+      
+      // Query the current next_billing_id from the contract
+      // Since the contract increments next_billing_id after registration,
+      // the billing ID assigned to the provider is (current_next_billing_id - 1)
+      const aptickResource = await this.aptos.getAccountResource({
+        accountAddress: this.config.contractAddress,
+        resourceType: `${this.config.contractAddress}::${this.config.moduleAccount}::Aptick`
+      });
+      
+      const nextBillingId = (aptickResource.data as any).next_billing_id;
+      const assignedBillingId = parseInt(nextBillingId) - 1;
+      
+      console.log('Current next_billing_id:', nextBillingId);
+      console.log('Assigned billing_id:', assignedBillingId);
+      
+      return assignedBillingId;
+    } catch (error) {
+      console.warn('Error getting billing ID from contract state:', error);
+      // Fallback: try to extract from transaction events
+      try {
+        const txn = await this.aptos.getTransactionByHash({ transactionHash: hash });
+        
+        if ('events' in txn && txn.events) {
+          // Look for any event that might contain billing ID
+          for (const event of txn.events) {
+            if ('data' in event) {
+              const eventData = event.data as any;
+              if (eventData && (eventData.billing_id || eventData.id)) {
+                return parseInt(eventData.billing_id || eventData.id);
+              }
+            }
+          }
+        }
+      } catch (eventError) {
+        console.warn('Error parsing transaction events:', eventError);
+      }
+      
+      // Final fallback: return 1 (first provider)
+      console.warn('Could not determine billing ID, using fallback value 1');
+      return 1;
+    }
   }
 
   private getDefaultContractAddress(network: string): string {
-    // TODO: Set actual deployed contract addresses for each network
-    switch (network) {
+    switch (network.toLowerCase()) {
       case 'mainnet':
-        return '0x'; // TODO: Mainnet contract address
+        return '0x72780903f4ca64d29bf9fcd1be4b863190d76d25cc5efd176ee4b119732419c1'; // Use devnet address as placeholder
       case 'testnet':
-        return '0x'; // TODO: Testnet contract address
+        return '0x72780903f4ca64d29bf9fcd1be4b863190d76d25cc5efd176ee4b119732419c1'; // Use devnet address as placeholder
       case 'devnet':
-        return '0x72780903f4ca64d29bf9fcd1be4b863190d76d25cc5efd176ee4b119732419c1'; // From your deployment
+        return '0x72780903f4ca64d29bf9fcd1be4b863190d76d25cc5efd176ee4b119732419c1'; // Your actual deployment
       case 'local':
-        return '0x'; // TODO: Local contract address
+        return '0x72780903f4ca64d29bf9fcd1be4b863190d76d25cc5efd176ee4b119732419c1'; // Use devnet address as placeholder
       default:
         throw new Error(`No default contract address for network: ${network}`);
     }
+  }
+
+  /**
+   * Get provider unit by reading the full provider struct from contract state
+   */
+  private async getProviderUnit(billingId: BillingId): Promise<AptickResult<string>> {
+    try {
+      const aptickResource = await this.aptos.getAccountResource({
+        accountAddress: this.config.contractAddress,
+        resourceType: `${this.config.contractAddress}::${this.config.moduleAccount}::Aptick`
+      });
+      
+      const resourceData = aptickResource.data as any;
+      const providersHandle = resourceData.providers.handle;
+      
+      const provider = await this.aptos.getTableItem({
+        handle: providersHandle,
+        data: {
+          key_type: 'u64',
+          value_type: `${this.config.contractAddress}::${this.config.moduleAccount}::Provider`,
+          key: billingId.toString()
+        }
+      }) as any;
+      
+      return {
+        success: true,
+        data: provider.unit as string
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Could not retrieve provider unit'
+      };
+    }
+  }
+
+  /**
+   * Get provider active status by reading the full provider struct
+   */
+  private async getProviderActive(billingId: BillingId): Promise<AptickResult<boolean>> {
+    try {
+      const aptickResource = await this.aptos.getAccountResource({
+        accountAddress: this.config.contractAddress,
+        resourceType: `${this.config.contractAddress}::${this.config.moduleAccount}::Aptick`
+      });
+      
+      const resourceData = aptickResource.data as any;
+      const providersHandle = resourceData.providers.handle;
+      
+      const provider = await this.aptos.getTableItem({
+        handle: providersHandle,
+        data: {
+          key_type: 'u64',
+          value_type: `${this.config.contractAddress}::${this.config.moduleAccount}::Provider`,
+          key: billingId.toString()
+        }
+      }) as any;
+      
+      return {
+        success: true,
+        data: provider.active as boolean
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Could not retrieve provider active status'
+      };
+    }
+  }
+
+  /**
+   * Get provider total revenue by reading the full provider struct
+   */
+  private async getProviderRevenue(billingId: BillingId): Promise<AptickResult<bigint>> {
+    try {
+      const aptickResource = await this.aptos.getAccountResource({
+        accountAddress: this.config.contractAddress,
+        resourceType: `${this.config.contractAddress}::${this.config.moduleAccount}::Aptick`
+      });
+      
+      const resourceData = aptickResource.data as any;
+      const providersHandle = resourceData.providers.handle;
+      
+      const provider = await this.aptos.getTableItem({
+        handle: providersHandle,
+        data: {
+          key_type: 'u64',
+          value_type: `${this.config.contractAddress}::${this.config.moduleAccount}::Provider`,
+          key: billingId.toString()
+        }
+      }) as any;
+      
+      return {
+        success: true,
+        data: BigInt(provider.total_revenue as string)
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Could not retrieve provider revenue'
+      };
+    }
+  }
+
+  /**
+   * Get deposit URL for this client's network and billing ID
+   */
+  getDepositUrl(billingId: BillingId): string {
+    return AptickUtils.getDepositUrl(billingId, this.config.network);
+  }
+
+  /**
+   * Get provider registration URL for this client's network
+   */
+  getProviderRegistrationUrl(): string {
+    return AptickUtils.getProviderRegistrationUrl(this.config.network);
+  }
+
+  /**
+   * Get base application URL for this client's network
+   */
+  getBaseUrl(): string {
+    return this.config.network === 'devnet' ? 'http://localhost:3000' : 'https://aptick.app';
   }
 }

@@ -156,6 +156,23 @@ export class AptickUtils {
   }
 
   /**
+   * Get deposit URL for a billing ID
+   */
+  static getDepositUrl(billingId: number, network: string = 'devnet'): string {
+    // Use localhost for development
+    const baseUrl = network === 'devnet' ? 'http://localhost:3000' : 'https://aptick.app';
+    return `${baseUrl}/deposit/${billingId}`;
+  }
+
+  /**
+   * Get provider registration URL
+   */
+  static getProviderRegistrationUrl(network: string = 'devnet'): string {
+    const baseUrl = network === 'devnet' ? 'http://localhost:3000' : 'https://aptick.app';
+    return `${baseUrl}/provider/register`;
+  }
+
+  /**
    * Get default RPC URL for network
    */
   static getDefaultRpcUrl(network: string): string {
