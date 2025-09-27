@@ -57,7 +57,7 @@ Perfect for cloud services, APIs, SaaS platforms, data storage, bandwidth, compu
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/username/aptick.git
+git clone https://github.com/virtualconnekt/aptick.git
 cd aptick
 npm install
 ```
@@ -423,7 +423,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Documentation**: [docs.aptick.dev](https://docs.aptick.dev) (coming soon)
 - **Discord**: [Join our community](https://discord.gg/aptick) (coming soon)
-- **Twitter**: [@AptickBilling](https://twitter.com/Ap_tick)
+- **Twitter**: [@Aptick](https://twitter.com/Ap_tick)
 - **Issues**: [GitHub Issues](https://github.com/virtualconnekt/aptick/issues)
 
 ## 📊 Stats
@@ -439,6 +439,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for the Aptos ecosystem**
 
-[Website](https://aptick.dev) • [Documentation](https://docs.aptick.dev) • [Discord](https://discord.gg/aptick) • [Twitter](https://twitter.com/Ap_tick)
+[Website](https://aptick.virtualconnekt.com.ng) • [Documentation](https://docs.aptick.dev) • [Discord](https://discord.gg/aptick) • [Twitter](https://twitter.com/Ap_tick)
 
 </div>
